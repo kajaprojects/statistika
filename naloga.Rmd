@@ -1,0 +1,755 @@
+---
+title: "NalogaStatistika"
+author: "Kaja Praprotntnik"
+date: "2023-09-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1. Merimo čas izvajanja računalniškega programa. Izvedemo 1000 merjenj in ugotovimo, da je
+čas izvajanja programa normalno porazdeljen s povprečjem 7 sekund in standardnim
+odklonom 0.5 sekunde.
+
+a. Kakšna je verjetnost, da bo čas izvajanja programa večji od 8 sekund
+
+Odgovor: Verjetnost, da bo čas izvajanja večji od 8 sekund je 0.02275013.
+
+```{r prva a}
+##CDF lahko izracunamo s pnorm(), 
+#CDF je komulativna fja verjetnosti x, - to so prispevki do x (se pravi koliko je verjetnosti, da zavzema vrednosti manjše ali enake x. Torej, ce zelimo dobiti verjetnost, da spremenljivka zavzema vrednosti večje od x, odštejemo cdf od 1)
+1 - pnorm(8, mean=7, sd=0.5)
+
+```
+b. Kakšna je verjetnost, da bo čas izvajanja programa med 7 in 8 sekund?
+
+Odgovor: Verjetnost, da bo cas izvajanja programa med 7 in 8 sekund je 0.4772499.
+
+```{r prva b}
+#Za izracun verjetnosti da bo cas izvajanja programa med 7 in 8 sekund izracunamo najprej cdf od 8 (s pomocjo pnorm()), da dobimo verjetnost da spremenljivka zavzema vrednosti do 8, nato pa temu odstejemo cdf od 7, da dobimo ravno verjetnost, da spremenljivka zavzema vrednosti med 7 in 8.
+pnorm(8, mean=7, sd=0.5)-pnorm(7, mean=7, sd=0.5)
+```
+c. Kakšen je čas izvajanja programa, ki je presežen v 90% meritev?
+
+Odgovor: Čas izvajanja programa, ki je presežen v 90% meritev je 6.359224 sekund.
+
+```{r prva c}
+# Ce zelimo izracunati cas izvajanja programa, ki je presezen v 90% meritev, moramo poiskati 10. percentil z uporabo funkcije qnorm().
+qnorm(0.10, mean = 7, sd=0.5)
+
+```
+d. Kakšen bi moral biti izmerjeni standardni odklon, da bi lahko trdili, da je v 99.9%
+primerov čas izvajanja manjši od 8 sekund?
+
+```{r prva a}
+#idk             pnorm(8, mean=7, sd=0.5)
+```
+
+2. V datoteki dn_srcni_utripi_telovadba.txt imamo zbrane podatke o meritvah povprečnih srčnih
+utripov študentov pri športni vzgoji. Podatki so zbrani glede na tip športa in glede na spol
+študentov. Analizirajte podatke na naslednji način:
+
+```{r prva }
+data_telovadba = read.csv('C:\\Users\\Kaja\\Desktop\\faks\\slovenska_statistika\\dn_srcni_utripi_telovadba.csv')
+
+```
+
+```{r druga }
+library(dplyr)
+library(Rmisc)
+library(ggplot2)
+library(tidyr)
+
+```
+a. Ocenite povprečja in variance srčnih utripov glede na šport. Pri tem izračunajte še
+intervale zaupanja v oceno parametrov
+
+Odgovor: Za izračun ocen povprecja, sem najprej grupirala podatke po tipu sporta in nato uporabila ddply funkcijo, ki applay-a funkcijo mean glede na srcni utrip v posamezni skupini, za izracun povprecja. Prav tako varianco. V spodnji tabeli lahko vidimo povprecja in varianco glede na posamezno skupino sporta.
+Tako smo dobili, da je pri meritvah pri sportu BADMINTON povprcno izmerjen utrip popoulacije 142,5, to pa je zajeto na podatkih v intervalu [139, 146]. Znotraj tega intervala, lahko trdimo, da bo znotraj lezalo populacijsko povprecje z veliko verjetnostjo.
+
+```{r druga a}
+
+dt <- data.frame(data,group = data_telovadba$TIP_SPORTA)
+ddply(dt,~group,summarise,mean=mean(SR_UTRIP),var=var(SR_UTRIP), n = length(SR_UTRIP), sd_utrip = sd(SR_UTRIP), stde = qt(0.975, n - 1)*sd_utrip / sqrt(n), leva_vrednost = mean - stde, desna_vrednost = mean + stde)
+
+
+```
+
+
+
+```{r druga a}
+#alternativa, ki je nisem uporabila, lahko pa s to funkcijo prav tako dobimo povprecje in intervale
+ci_posportih = group.CI(SR_UTRIP ~ TIP_SPORTA, data)
+ci_posportih
+```
+b. Izrišite na skupnem grafu diagrame okvirjev z ročaji za vsak šport.
+Kaj lahko ugotovite iz grafa? 
+Odgovor: Iz grafa lahko razberemo povprecja meritev srcnih utripov za vsako skupino sporta, prav tako lahko primerjamo skupine med sabo in ugotovimo ali se statisticno znacilno paroma razlikujejo, prav tako lahko opazimo, da podatki niso normalno porazdeljeni(mediane niso na sredini skatel).
+
+```{r druga b}
+#Izrisemo diagrame okvirjev z rocaji z ggplot
+ggplot(data, aes(x = TIP_SPORTA, y = SR_UTRIP)) +
+  geom_boxplot() +
+  labs(x = "Sport", y = "SR_UTRIP") +
+  ggtitle("Diagrami okvirjev z rocaji za srcni utrip po sportih")
+```
+c. Ugotovite, ali se intenzivnosti vadbe glede na izmerjeni srcni utrip statistično značilno
+razlikujejo glede na posamezne sporte. To izvedite tako, da paroma primerjajte
+meritve srcnih utripov med posameznimi sporti. Predpostavite normalno porazdelitev
+vzorcev.
+
+Glede na to, da imamo izrisani graf okvir z rocaji in predpostavljamo normalno porazdelitev vzorcev, lahko iz njega razberemo ali so paroma meritve srcnih utripov statisticno znacilne. In sicer, pogledamo ce mediana prve skupine ne seka skatle druge skupine, potem lahko recemo, da se ti dve skupini statisticno znacilno razlikujeta po meritvah. Torej, v nasem primeru:
+1) BADM in FIT:
+Mediana BADM skupine seka skatlo FIT skupine, torej lahko recemo, da se ti dve skupini po intenzivnosti vadbe statisticno znacilno NE razlikujeta po meritvah, če gledamo le glede na diagram okvirjev z ročaji.
+2) FIT in KOS:
+Mediana FIT skupine ne seka skatle KOS skupine, torej lahko recemo, da se ti dve skupini po intenzivnosti vadbe statisticno znacilno razlikujeta po meritvah, če gledamo le glede na diagram okvirjev z ročaji.
+3) KOS in NOG: Mediana KOS skupine seka skatlo NOG skupine, torej lahko rečemo, da se ti dve skupini po intenzivnosti vadbe statisticno znacilno NE razlikujeta po meritvah, če gledamo le glede na diagram okvirjev z ročaji.
+4) NOG in ODB: Mediana NOG skupine seka skatlo ODB skupine, torej lahko recemo, da se ti dve skupini po intenzivnosti vadbe statistično znacilno NE razlikujeta po meritvah, če gledamo le glede na diagram okvirjev z ročaji.
+
+
+
+
+d. Pri odbojki in fitnesu ugotovite, ali obstajajo statisticno znacilne razlike med spoloma. Predpostavite normalno porazdelitev vzorcev.
+
+ODGOVOR: Pri odbojki lahko opazimo, da mediana prve skupine ne seka skatle druge skupine, tako da lahko recemo da se statisticno znacilno razlikujeta po meritvah, torej, obstajajo statistične značilne razlike med spoloma.
+Pri fitnesu pa lahko opazimo, da mediana prve skupine seka skatlo druge skupine, tako da lahko recemo da se statisticno znacilno ne razlikujeta po meritvah, torej, ne obstajajo statisticno znacilne razlike med spoloma.
+
+```{r druga d}
+df_grp_odbojka = data %>% filter(TIP_SPORTA == "ODB")
+
+#Izrisemo diagrame okvirjev z rocaji z ggplot
+ggplot(df_grp_odbojka, aes(x = SPOL, y = SR_UTRIP)) +
+  geom_boxplot() +
+  labs(x = "Spol", y = "SR_UTRIP") +
+  ggtitle("Diagrami okvirjev z rocaji za srcni utrip odbojka")
+```
+
+```{r druga d}
+df_grp_fitnes = data %>% filter(TIP_SPORTA == "FIT")
+
+#Izrisemo diagrame okvirjev z rocaji z ggplot
+ggplot(df_grp_fitnes, aes(x = SPOL, y = SR_UTRIP)) +
+  geom_boxplot() +
+  labs(x = "Spol", y = "SR_UTRIP") +
+  ggtitle("Diagrami okvirjev z rocaji za srcni utrip fitnes")
+
+```
+
+
+3. Iz podatkov iz naloge 2 ocenite intervale zaupanja v ocene povprečij, mediane in standardnega odklona po metodi večkratnega vzorčenja (ang. bootstrapping) za vsak šport.
+Intervale ocenjujte na 1000 ponovitvah vzorčenja.  
+
+```{r tretja }
+library(boot)
+```
+
+```{r tretja}
+df_grp_fitnes = data %>% filter(TIP_SPORTA == "FIT")
+df_grp_fitnes
+
+#povprecje po bootstrapu
+Mboot = boot(df_grp_fitnes$SR_UTRIP,
+             function(x,i) mean(x[i]), 
+             R=1000)
+
+Mboot
+
+# Povprecje iz boostrapa.
+#ena vrednost
+mean(Mboot$t[,1])
+#Izris histograma povprečij iz bootstrapa
+hdat = data.frame(x=Mboot$t[,1])
+ggplot(hdat, aes(x=x)) + 
+  geom_histogram(color="black", fill="cornflowerblue", bins = 10) + theme_bw()
+boot.ci(Mboot,
+        conf = 0.95, 
+        type = c("perc")
+        )
+
+#std po bootstrapu
+std_boot = boot(df_grp_fitnes$SR_UTRIP,
+             function(x,i) sd(x[i]), 
+             R=1000)
+
+# Povprečje iz boostrapa.
+mean(std_boot$t[,1])
+
+hdat = data.frame(x=std_boot$t[,1])
+ggplot(hdat, aes(x=x)) + 
+  geom_histogram(color="black", fill="cornflowerblue", bins = 10) + theme_bw()
+
+boot.ci(std_boot,
+        conf = 0.95, 
+        type = c("perc")
+        )
+```
+
+4. Denimo, da izvajamo meritve casa trajanja programov (v min) za resevanje nekega problema, pri cemer uporabljamo tri metode reševanja A, B in C, pri nastavitvah parametrov 1 in 2. Za vsako kombinacijo metod in parametrov pozenemo program 10-krat in belezimo case trajanja programa. Podatki so v tabeli:
+
+```{r cetrta naloga}
+#osnovna opisna statistika
+
+cetrta_podatki <- data.frame(
+  metoda = rep(c("A", "B", "C"), each = 20),
+  parameter = rep(rep(c("1", "2"), each = 10), 3),
+  cas = c(
+    54, 49, 59, 39, 55, 47, 55, 52, 52, 54,
+    25, 29, 47, 26, 28, 33, 30, 28, 27, 30,
+    53, 72, 43, 56, 52, 67, 45, 72, 68, 59,
+    46, 51, 33, 47, 41, 45, 47, 38, 42, 50,
+    33, 30, 26, 25, 29, 31, 34, 27, 33, 28,
+    18, 21, 34, 40, 24, 28, 30, 20, 18, 21
+  )
+)
+
+cetrta_podatki
+
+```
+
+Naredi osnovno opisno statistiko casov izvajanja: glede na metode izvajanja, glede na
+nastavitve parametrov in glede na oboje skupaj. 
+
+```{r prva_cetrta_a}
+# Osnovna opisna statistika glede na metode izvajanja
+
+# glede nametodo in parametre skupaj 
+opisna_statistika <- cetrta_podatki %>%
+  summarise(
+    glede = "vse",
+    povprecje = mean(cas),
+    mediana = median(cas),
+    std = sd(cas),
+    min = min(cas),
+    max = max(cas),
+    sum = sum(cas)
+  )
+
+#glede na metodo
+
+stat_glede_A = cetrta_podatki %>% filter(metoda == "A")
+opisna_statistika_metoda_A <- stat_glede_A %>%
+  summarise(
+    glede_metodo = "A",
+    povprecje = mean(cas),
+    mediana = median(cas),
+    std = sd(cas),
+    min = min(cas),
+    max = max(cas),
+    sum = sum(cas)
+  )
+
+stat_glede_B = cetrta_podatki %>% filter(metoda == "B")
+opisna_statistika_metoda_B <- stat_glede_B %>%
+  summarise(
+    glede_metodo = "B",
+    povprecje = mean(cas),
+    mediana = median(cas),
+    std = sd(cas),
+    min = min(cas),
+    max = max(cas),
+    sum = sum(cas)
+  )
+
+stat_glede_C = cetrta_podatki %>% filter(metoda == "C")
+opisna_statistika_metoda_C <- stat_glede_C %>%
+  summarise(
+    glede_metodo = "C",
+    povprecje = mean(cas),
+    mediana = median(cas),
+    std = sd(cas),
+    min = min(cas),
+    max = max(cas),
+    sum = sum(cas)
+  )
+
+#glede na parametre
+stat_glede_parameter_1 = cetrta_podatki %>% filter(parameter == "1")
+opisna_statistika__parameter_1 <- stat_glede_parameter_1 %>%
+  summarise(
+    glede_par = 1,
+    povprecje = mean(cas),
+    mediana = median(cas),
+    std = sd(cas),
+    min = min(cas),
+    max = max(cas),
+    sum = sum(cas)
+  )
+
+stat_glede_parameter_2 = cetrta_podatki %>% filter(parameter == "2")
+
+opisna_statistika_parameter_2 <- stat_glede_parameter_2 %>%
+  summarise(
+    glede_par = 2,
+    povprecje = mean(cas),
+    mediana = median(cas),
+    std = sd(cas),
+    min = min(cas),
+    max = max(cas),
+    sum = sum(cas)
+  )
+print(opisna_statistika_metoda_A)
+print(opisna_statistika_metoda_B)
+print(opisna_statistika__parameter_1)
+print(opisna_statistika_parameter_2)
+print(opisna_statistika_metoda_C)
+print(opisna_statistika)
+
+```
+4.b. Narisi ustrezne grafe in na podlagi grafov (!!!!) doloci ali obstajajo statisticno značilne razlike med metodami izvajanja, med nastavitvami parametrov in glede na oboje skupaj. 
+
+Odgovor: Izrisala sem grafe glede na:
+1. parametre (kjer so vsi casi iz vseh metod glede na nastavitve parametrov 1 in     parametrov 2):
+     Ker mediana prve skatle, ne seka druge skatle, lahko trdimo, da sta ti dve        meritvi statisticno znacilno razlicni.
+2. metodo (kjer gledamo glede na metodo, se pravi vrstice v tabeli in ne razlocimo    med nastavitvami parametra 1 in parametra 2):
+     Na podlagi izrisanega boxplota lahko vidimo, da mediana prve skatle ne seka       mediane druge skatle, kar lahko namiguje na to, da sta ti dve meritvi             statisticno znacilno razlicni. Vseeno pa bi bilo bolj zanesljivo narediti         statistični test (neodvisni t-test, ce so podatki normalno porazdeljeeni ali      Mann-Whitney U, če niso normalno porazdeljeni). Isto ugotovimo za drugo in        tretjo, ki mediana druge skatle ne seka tretje skatle.
+3. glede na oboje (to sem naredila tako, da sem najprej filtrirala podatke za        nastavitve parametra 1 in nato gledala metode in nato filtrirala podatke za       nastavitve parametra 2 in nato gledala metode):
+      a) nastavitve parametra 1 + vse metode:
+            Mediana druge skatle ne seka prve skatle, prav pa tako nobena mediana             ne seka tretje skatle, tako da to lahko nakazuje moznost , da so te               meritve statisticno znacilno razlicne.
+      b) nastavitve parametra 2 + vse metode:
+            mediana druge skatle ne seka prve skatle in obratno, prav pa tako                 mediana tretje skatle ne seka prve skatle, tako da to lahko nakazuje              moznost, da so te meritve statisticno znacilno razlicne.
+            
+```{r prva_cetrta_b}
+#graf glede na vse
+
+ggplot(stat_glede_parameter_1, aes(x = metoda, y = cas)) +
+  geom_boxplot() +
+  labs(x = "parameter", y = "cas") +
+  ggtitle("Diagrami okvirjev z rocaji glede na oboje, parameter 1 in vse metode")
+
+ggplot(stat_glede_parameter_2, aes(x = metoda, y = cas)) +
+  geom_boxplot() +
+  labs(x = "parameter", y = "cas") +
+  ggtitle("Diagrami okvirjev z rocaji glede na oboje, parameter 2 in vse metode")
+
+#graf glede na metodo
+ggplot(cetrta_podatki, aes(x = metoda, y = cas)) +
+  geom_boxplot() +
+  labs(x = "metoda", y = "cas") +
+  ggtitle("Diagrami okvirjev z rocaji glede na metodo izvajanja")
+
+#graf glede na parametre
+ggplot(cetrta_podatki, aes(x = parameter, y = cas)) +
+  geom_boxplot() +
+  labs(x = "parameter", y = "cas") +
+  ggtitle("Diagrami okvirjev z rocaji glede na nastavitev parametrov")
+
+
+
+```
+4.c Oceni intervale zaupanja v povprečne vrednosti in na podlagi intervalov zaupanja
+določi (!!!!), ali obstajajo statistično značilne razlike med metodami izvajanja, med
+nastavitvami parametrov in glede na oboje skupaj. 
+
+```{r prva_cetrta_c}
+
+
+
+```
+
+5. Napiši funkcije v R za izračun specifičnosti, senzitivnosti in točnosti, ki jih izračunaš iz
+kontingenčne tabele (vhod v funkcijo). Testiraj delovanje funkcije na naslednjih podatkih: 
+
+Odgovor: Test je dober, ce sta specificnost in sensitivnost visoki. sensitivnost je v primeru podatkov iz podane kontingencne tabele 0.9659864, specificnost  0.9096045 in tocnost 0.9351852. 
+```{r peta}
+# Podatki iz kontingencne tabele. Uporabljamo jih ko preucujemo 2 ali vec kategorijski spremenljivki.
+TP = 710  
+FP = 80   
+FN = 25  
+TN = 805 
+
+# Senzitivnost lahko izracunamo po formuli TP/(TP + FN). Senzitivnost meri kako nas testni postopek dobro napoveduje pozitivne referencne razrede. Sensitivnost se meri pri neuravnotezenih razredih.
+senzitivnost <- function(TP, FN) {
+  return(TP / (TP + FN))
+}
+
+# Specificnost lahko izracunamo po formuli TN/(FP + TN). Specificnost meri kako dobro napovedujemo negativne referencne razrede. Specificnost se meri pri neuravnotezenih razredih.
+specificnost <- function(TN, FP) {
+  return(TN / (TN + FP))
+}
+
+# Tocnost izracunamo po formuli (TP + TN) / N. Meri kvaliteto nasega postopka v primerjavi z referencnoi vrednostjo. Vecja kot je stevilka boljsi je test. Tocnost je dobra mera, ce so podatki uravnotezeni. Ampak odvisno kaj zelimo.
+tocnost <- function(TP, TN, FP, FN) {
+  return((TP + TN) / (TP + FP + FN + TN))
+}
+
+cat("Senzitivnost:", senzitivnost(TP, FN), "\n")
+cat("Specificnost:", specificnost(TN, FP), "\n")
+cat("Tocnost:", tocnost(TP, TN, FP, FN), "\n")
+```
+
+
+
+6. Zdravniki so ugotovili, da obstaja zveza med koncentracijo kreatinina v krvi in akutnim vnetjem
+ledvic. Zato so zaceli meriti koncentracijo kreatinina pri pacientih. Podatki so zbrani v datoteki
+dn_kreatinin_akin.txt, kjer so v prvem stolpcu meritve kreatinina, v drugem pa podatek, ali je
+prišlo do akutnega vnetja ledvic ali ne. 
+
+a. Izvedite ROC analizo, da ugotovite, kako dobro kreatinin napoveduje vnetje ledvic. 
+
+Fun fact: Pri ROC krivulji izracunamo vse mozne pragove/mejne vrednosti in za vsako izracunamo specificnost in senzitivnost. Visja kot je AUC vrednost, boljsi je test
+Odgovor: 
+
+b. Iz grafa ROC krivulje ocenite senzitivnosti pri specifičnosti 0.8 in 0.6.
+c. Na podlagi ROC krivulje ugotovite mejno vrednost kreatinina, kjer dosežemo
+senzitivnost večjo od 75%. 
+
+```{r sesta a}
+#TODO: preveri ce je prav
+kreatinin_akin = read.csv('C:\\Users\\Kaja\\Desktop\\faks\\slovenska_statistika\\dn_kreatinin_akin.csv')
+
+library(pROC)
+roc_data = roc(kreatinin_akin$AKIN, kreatinin_akin$Kreatinin)
+
+roc_df1 <- data.frame(
+  Specificity = roc_data$specificities,
+  Sensitivity = roc_data$sensitivities,
+  Threshold = roc_data$thresholds
+)
+
+names(roc_df1) = c("Specificity", "Sensitivity", "Threshold")
+# obrnemo zaradi izrisa
+roc_df = roc_df1[order(nrow(roc_df1):1), ]
+roc_df$klasifikacija = rep(1, nrow(roc_df1))
+
+#ploscina podkrivuljo, oomejena na intervalu med 0 in 1
+auc1 = roc_data$auc
+auc1
+
+# za izris identitete
+ident = data.frame(x=c(0,1), y = c(0,1))
+
+#roc_df = rbind(roc_df1, roc_df2)
+roc_df$klasifikacija = as.factor(roc_df$klasifikacija)
+
+ggplot(data=roc_df, aes(x=1-Specificity, y = Sensitivity, color = klasifikacija) ) +
+  
+  geom_point(size=2) + 
+  geom_line(size=1) +
+  
+  # dodajanje identitete
+  geom_line(data = ident, mapping = aes(x=x, y = y), color="steelblue", linetype="dashed") +
+
+  theme_bw()
+
+```
+2.1. Pri kirurški operaciji srca merimo koncentracije treh markerjev, s katerimi ugotavljamo uspešnost operacije. Meritve izvajamo tako, da merimo koncentracije markerjev pred in po operaciji. Podatki so zbrani v datoteki dn_markerji_pred_po.txt.
+Ugotovite, ali obstajajo statistično značilne razlike med markerji pred in po operaciji. Odgovor utemelji s statistično analizo. 
+
+Odgovor: Da lahko ugotovimo, ali obstajajo statistično značilne razlike med markerji pred in po operaciji, moramo najprej pogledati ali so podatki normalno porazdeljeni. To naredimo z testom normalnosti, Shapiro_Wilk test. Ce je p-vrednost tega testa manjsa od 0.05, potem ni normlano porazdeljeno, ce ni manjsa, potem je normalno porazdeljeno. V nasem primeru je p-value = 0.1006 spremenljivke pred_NGAL, kar je vecje od 0.05, in zato lahko recemo, da je normalno porazdeljeno. Ampak po_NGAL je p-vrednost p-value = 0.009427, kar pomeni, da ni normalno porazdeljena. 
+V nasem primeru za spremenljivko pred_NGAL, moramo narediti Wilcoxonov test, ker so odvisni podatki (merimo iste ljudi pred in po operaciji) in je eden od vzorcev ne normalno porazdeljen.Koncentracije markerjev pred operacijo in koncentracije markerjev po operaciji se statisticno znacilno razlikujeta (p-value = 3.967e-12).
+
+```{r druga_prva}
+markerji= read.csv('C:\\Users\\Kaja\\Desktop\\faks\\slovenska_statistika\\dn_markerji_pred_po.csv')
+markerji
+
+shapiro.test(markerji$pred_NGAL)
+shapiro.test(markerji$po_NGAL)
+
+#parni t-test
+y0 = markerji$pred_NGAL
+y1 = markerji$po_NGAL
+
+wilcox.test(markerji$pred_NGAL, markerji$po_NGAL, paired = TRUE)
+
+```
+2.2. Preučujemo ocene študentov pri dveh predmetih Statistiki in Matematičnem modeliranju.
+Študente smo prešteli po naslednjih skupinah.
+Ali so ocene študentov pri obeh predmetih v kakšni relaciji?
+Odgovor utemelji s statistično analizo.
+
+Odgovor: Naredili smo hi-kvadrat test, ki ga uporabljamo za ugotavljanje ali sta dve količini med seboj v enakih razmerjih. Torej, preštejemo koliko imamo kombinacij Statistika ocena 10 - Mtematično modeliranje 10, kombinacij statistika ocena 10, matematično modelliranje 8-9, itd. in ugotavljamo povezavo med predmetom Statistika in Matematično modeliranje. Uporabili smo hi-kvadrat test, ampak če bi bilo v tabeli več kot 20% celic, kjer je frekvenca manjša od 5, bi uporabili Fisherjev natančni test. Naša ničta hipoteza je: 
+H_0 = Količini sta nepovezani
+Ker smo dobili p-vrednost p-value = 0.002415, ki je manjša od 0.05, lahko ničto hipotezo H_0 zavrnemo in rečemo, da sta ti dve spremenljivki (predmet Statistika in Matematično modeliranje) povezani.
+
+```{r druga_druga c}
+# ustvarimo tabelo
+tdat = as.table(rbind(c(25, 17, 18, 10),   
+                      c(6, 16, 4, 8),      
+                      c(17, 15, 18, 11),   
+                      c(13, 6, 10, 20)))   
+
+# imenujemo vrstice in stolpce
+dimnames(tdat) = list("Statistika" = c("10", "8-9", "6-7", "<6"),
+                      "Matematicno modeliranje" = c("10", "8-9", "6-7", "<6"))
+tdat
+
+# naredimo hi-kvadrat test
+chisq.test(tdat, correct = FALSE)
+
+
+```
+3. Preučujemo razlike v zdravljenju ob uporabi dveh zdravil. Podatki meritev so podani v
+datoteki zdravljenje.xlsx.
+
+a. Ugotovi, ali obstaja statistično značilna razlika med zdravili. 
+  II. Izpolni tabelo s podatki:
+
+| zdravilo | skupaj (povpr ± std. odkl) | moški (povpr ± std. odkl) | ženske (povpr ± std. odkl) |
+|----------|----------------------------|---------------------------|----------------------------|
+| 1        |       19.8 ± 4.87          |         20.43 ± 5.25      |        19.28 ± 4.48        |
+| 2        |       18.83 ± 1.9          |         19.03 ± 1.93      |        18.58 ± 1.92        |
+
+
+```{r druga_read}
+install.packages("readxl") # CRAN version
+library(readxl)
+data = read_excel("C:\\Users\\Kaja\\Desktop\\faks\\slovenska_statistika\\zdravljenje.xlsx")
+```
+
+
+```{r druga_druga_a}
+#skupaj
+zdravilo1 <- data %>% filter(zdravilo == 1)
+zdravilo2 <- data %>% filter(zdravilo == 2)
+
+povprecje_zdravilo1_skupaj <- mean(zdravilo1$marker)
+std_zdravilo1_skupaj <- sd(zdravilo1$marker)
+
+povprecje_zdravilo2_skupaj <- mean(zdravilo2$marker)
+std_zdravilo2_skupaj <- sd(zdravilo2$marker)
+
+ttest_vsi <- t.test(zdravilo1$marker, zdravilo2$marker)
+
+#paste zlepi stringe
+print("Skupaj:")
+print(paste("Zdravilo 1: povprecje =", povprecje_zdravilo1_skupaj, ", Std =", std_zdravilo1_skupaj))
+print(paste("Zdravilo 2: povprecje =", povprecje_zdravilo2_skupaj, ", Std =", std_zdravilo2_skupaj))
+print(paste("p-vrednost =", ttest_vsi$p.value))
+
+#moski
+zdravilo1_m <- zdravilo1 %>% filter(spol == 'M')
+zdravilo2_m <- zdravilo2 %>% filter(spol == 'M')
+
+povprecje_zdravilo1_m <- mean(zdravilo1_m$marker)
+std_zdravilo1_m <- sd(zdravilo1_m$marker)
+
+povprecje_zdravilo2_m <- mean(zdravilo2_m$marker)
+std_zdravilo2_m <- sd(zdravilo2_m$marker)
+
+print("Moski:")
+print(paste("Zdravilo 1: povprecje =", povprecje_zdravilo1_m, ", Std =", std_zdravilo1_m))
+print(paste("Zdravilo 2: povprecje =", povprecje_zdravilo2_m, ", Std =", std_zdravilo2_m))
+
+#zenske
+zdravilo1_z <- zdravilo1 %>% filter(spol == 'Z')
+zdravilo2_z <- zdravilo2 %>% filter(spol == 'Z')
+
+povprecje_zdravilo1_z <- mean(zdravilo1_z$marker)
+std_zdravilo1_z <- sd(zdravilo1_z$marker)
+
+povprecje_zdravilo2_z <- mean(zdravilo2_z$marker)
+std_zdravilo2_z <- sd(zdravilo2_z$marker)
+
+print("Zenske:")
+print(paste("Zdravilo 1: povprecje =", povprecje_zdravilo1_z, ", Std =", std_zdravilo1_z))
+print(paste("Zdravilo 2: povprecje =", povprecje_zdravilo2_z, ", Std =", std_zdravilo2_z))
+
+
+
+```
+ii. Preveri, ali so meritve normalno porazdeljene (ne glede na spol).
+
+Odgovor:
+Za ugotovitev, ce so meritve normalno porazdeljene, uporabimo Shapiro-Wilk test normalnosti. Zapisemo nicto hipotezo:
+H_0: Podatki so normlno porazdeljeni.
+Ker je p-value = 0.1516 pri podatkih za zdravilo 1 vecja od 0.05, potem nicte hipoteze ne moremo zavrniti. Torej podatki so normalno porazdeljeni. Prav tako je  p-value = 0.411 za zdravilo 2 vecja od 0.05, zato tudi tukaj ne moremo zavrniti nicte hipoteze in ugotovimo, da so meritve pri zdravilu 2 tudi normalno porazdeljene.
+
+```{r druga_prva_b}
+#uporabimo Shapiro-Wilk test normalnosti
+shapiro_test_zdravilo1 <- shapiro.test(zdravilo1$marker)
+shapiro_test_zdravilo2 <- shapiro.test(zdravilo2$marker)
+print("Shapiro-Wilk test za zdravilo 1:")
+print(shapiro_test_zdravilo1)
+print("Shapiro-Wilk test za zddravilo 2:") 
+print(shapiro_test_zdravilo2)
+```
+iii. Ali obstaja statisticno znacilna razlika med zdravilom 1 in 2?
+Kateri statisticni test si uporabil za testiranje uspesnosti zdravljenja?
+Kakšna je nicta hipoteza tvojega testa?
+Kaj si s tem pokazal?
+
+Odgovor: Uporabili smo parni t-test neodvisnih vzorcev, zato ker so podatki za oba zdravila normalno porazdeljeni in neodvisni. Postavimo nicto hipotezo
+H_0: Zdravilo 1 in zdravilo 2 se statisticno znacilno ne razlikujeta.
+Ker smo dobili p-value = 0.05651, za vse skupaj in to je malo nad =.05, ne moremo ovreči ničte hipoteze, kar pomeni, da se zdravilo 1 in zdravilo 2 statisticno znacilno ne razlikujeta. 
+
+```{r druga_prva_b}
+#za vse
+t_test <- t.test(zdravilo1$marker, zdravilo2$marker, var.equal = FALSE)
+
+print(t_test)
+```
+
+b. Analiza uspešnosti zdravil glede na spol:
+i. Izpolni spodnjo tabelo s številom pacientov in deležem glede na spol pri obeh
+metodah:
+
+|          | zdravilo 1 (delez v %) | zdravilo 2 (delez v %) |
+|----------|------------------------|------------------------|
+| moski    |         46.93          |         53.94          |
+| zenske   |         53.06          |         46.05          |
+
+ii. Preveri, ali sta deleža moških in žensk pri obeh zdravilih enaka.
+
+Odgovor: Nista, delez moskih pri zdravilu 1 je 46.93 in delez moskih pri zdravilu 2 je 53.94, kar ni enako. Pri zenskah tudi ni enako in sicer 53.06 pri zdravilu 1 in 46.05 pri zdravilu 2.
+
+```{r druga_prva_b}
+st_moskih_zdravilo_1 = sum(data$spol == "M" & data$zdravilo == 1)
+
+st_moskih_zdravilo_2 = sum(data$spol == "M" & data$zdravilo == 2)
+
+st_zensk_zdravilo_1 = sum(data$spol == "Z" & data$zdravilo == 1)
+
+st_zensk_zdravilo_2 = sum(data$spol == "Z" & data$zdravilo == 2)
+
+st_vseh_1 = st_zensk_zdravilo_1 + st_moskih_zdravilo_1
+st_vseh_2 = st_zensk_zdravilo_2 + st_moskih_zdravilo_2
+
+#delez moskih zdravilo 1
+delez_m_1 = (st_moskih_zdravilo_1 / st_vseh_1) * 100
+
+#delez moskih zdravilo 2
+delez_m_2 = (st_moskih_zdravilo_2 / st_vseh_2) * 100
+
+#delez zensk zdravilo 1
+delez_z_1 = (st_zensk_zdravilo_1 / st_vseh_1) * 100
+
+#delez zensk zdravilo 2
+delez_z_2 = (st_zensk_zdravilo_2 / st_vseh_2) * 100
+
+print(paste("Zdravilo 1: Moski =", delez_m_1, "%, zenske =", delez_z_1, "%\n"))
+print(paste("Zdravilo 2: Moški =", delez_m_2, "%, Ženske =", delez_z_2, "%\n"))
+
+```
+
+iii. Preveri, ali obstajajo razlike v uspešnosti zdravljenja glede na spol pri zdravilu 1.
+Kateri statistični test si uporabil? Kakšna je p-vrednost?
+Kaj to pomeni?
+
+Odgovor: Za preverjanje razlik v uspesnosti zdravljenja glede na spol pri zdravilu 1 sem uporabila t.test, ker sta spremenljivki neodvisni in normalno porazdeljeni.
+Postavimo nicto hipotezo in sicer H_0: Skupini se statisticno znacilno ne razlikujeta. Ker je p-value = 0.2454 vecja od 0.05, ne moremo ovreci nicte hipoteze. Torej Uspesnost zdravljenja glede na spol se statisticno znacilno ne razlikuje.
+```{r tretja_a_3}
+shapiro_m = shapiro.test(zdravilo1_m$marker)
+shapiro_m #p-value = 0.4135, se pravi je normalno porazdeljen
+
+shapiro_z = shapiro.test(zdravilo1_z$marker)
+shapiro_z # p-value = 0.2316, se pravi je normalno porazdeljen
+
+t_test_result <- t.test(zdravilo1_m$marker, zdravilo1_z$marker, var.equal = TRUE)
+t_test_result
+
+```
+iv. Preveri, ali obstajajo razlike v uspešnosti zdravljenja glede na spol pri zdravilu
+2.
+Kateri statistični test si uporabil? Kakšna je p-vrednost?
+Kaj to pomeni?
+
+Odgovor: Za preverjanje razlik v uspesnosti zdravljenja glede na spol pri zdravilu 2 sem uporabila t.test, ker sta spremenljivki neodvisni in normalno porazdeljeni.
+Postavimo nicto hipotezo in sicer H_0: Skupini se statisticno znacilno ne razlikujeta. Ker je p-value = 0.1576 vecja od 0.05, ne moremo ovreci nicte hipoteze. Torej Uspesnost zdravljenja glede na spol se statisticno znacilno ne razlikuje.
+
+```{r tretja_a_4}
+shapiro_m = shapiro.test(zdravilo2_m$marker)
+shapiro_m #p-value = 0.1968, se pravi je normalno porazdeljen
+
+shapiro_z = shapiro.test(zdravilo2_z$marker)
+shapiro_z # p-value = 0.2004, se pravi je normalno porazdeljen
+
+t_test_result <- t.test(zdravilo2_m$marker, zdravilo2_z$marker, var.equal = TRUE)
+t_test_result
+
+
+```
+4. Preučujemo vpliv izpostavljenosti hrupu in krvnim tlakom pri ljudeh (članek v Journal of
+Sound and Vibration, vol. 151, 1991, pp. 383-394). Izmerili smo naslednje podatke:
+
+|   y |   x |   y_2 |   x_2 |
+|----:|----:|------:|------:|
+|   1 |  60 |     5 |    85 |
+|   0 |  63 |     4 |    89 |
+|   1 |  65 |     6 |    90 |
+|   2 |  70 |     8 |    90 |
+|   5 |  70 |     4 |    90 |
+|   1 |  70 |     5 |    90 |
+|   4 |  80 |     7 |    94 |
+|   6 |  90 |     9 |   100 |
+|   2 |  80 |     7 |   100 |
+|   3 |  80 |     6 |   100 |
+
+a. Nariši diagram raztrosa (scatter diagram) količine x (stopnja hrupa merjena v dB) in
+količine y (povišanje krvnega tlaka v mmHg)? Ali lahko na podlagi diagrama
+upravičeno sklepamo, da je primeren model za modeliranje odvisnosti med y in x
+linearna regresija?
+
+Odgovor: Na podlagi diagrama lahko sklepamo, da je korelacija med stopnjo hrupa in povisanega krvnega tlaka pozitivno narascujoca, torej linearna regresija bi bil primeren model za modeliranje odvisnosti med y in x.
+
+```{r druga_prva_b}
+
+y <- c(1, 0, 1, 2, 5, 1, 4, 6, 2, 3)
+x <- c(60, 63, 65, 70, 70, 70, 80, 90, 80, 80)
+
+data_raztros <- data.frame(x = x, y = y)
+
+# izris
+ggplot(data_raztros, aes(x = x, y = y)) +
+  geom_point(color = "blue") +
+  ggtitle("diagram raztrosa") +
+  xlab("x (stopnja hrupa merjena v dB)") +
+  ylab("y (povišanje krvnega tlaka v mmHg)") +
+  theme_bw()
+
+```
+b. Modeliraj y v odvisnosti z x z modelom linearne regresije. Kakšna je varianca napak (residualov)?
+
+```{r druga_prva_b}
+
+LinearModel <- lm(y ~ x, data_raztros)
+print(LinearModel)
+
+
+
+```
+
+
+
+```{r druga_prva_b}
+
+
+
+```
+
+
+```{r druga_prva_b}
+
+
+
+```
+
+
+```{r druga_prva_b}
+
+
+
+```
+
+
+```{r druga_prva_b}
+
+
+
+```
+
+
+```{r druga_prva_b}
+
+
+
+```
+
+
+
+```{r druga_prva_b}
+
+
+
+```
