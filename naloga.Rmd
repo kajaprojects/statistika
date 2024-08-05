@@ -90,7 +90,7 @@ ddply(dt,~group,summarise,mean=mean(SR_UTRIP),var=var(SR_UTRIP), n = length(SR_U
 ```{r druga a}
 #alternativa, ki je nisem uporabila, lahko pa s to funkcijo prav tako dobimo povprecje in intervale
 ci_posportih = group.CI(SR_UTRIP ~ TIP_SPORTA, data_telovadba)
-ci_posportih
+print(ci_posportih)
 ```
 ##2b. 
 Izrišite na skupnem grafu diagrame okvirjev z ročaji za vsak šport.
@@ -607,7 +607,6 @@ Ugotovi, ali obstaja statistično značilna razlika med zdravili.
 
 
 ```{r druga_read}
-install.packages("readxl") # CRAN version
 library(readxl)
 data = read_excel("C:\\Users\\Kaja\\Desktop\\faks\\slovenska_statistika\\zdravljenje.xlsx")
 ```
@@ -825,54 +824,217 @@ ggplot(data_raztros, aes(x = x, y = y)) +
   theme_bw()
 
 ```
-#2, 4.b
+##2, 4.b
 Modeliraj y v odvisnosti z x z modelom linearne regresije. Kakšna je varianca napak (residualov)?
+
+## Odgovor:
+Varianca napak je 1.363 pri 8 stopnjah prostosti.
 
 ```{r druga_prva_b}
 
 LinearModel <- lm(y ~ x, data_raztros)
-print(LinearModel)
-
-
+summary(LinearModel)
 
 ```
 
 
+##2, 4.c
+Izračunaj napovedano vrednost povišanja krvnega tlaka ob hrupu 85 dB
+
+##odgovor
+Racunamo odzivno spremenljivko y, pri cemer je  opsina spremenljivka x = 85. Iz zgornje naloge lahko izberemo, da je beta_0 = -8.93791 in beta_1 = 0.15711. Ce zapisemo po formuli y = beta_0 + beta_1 * x dobimo y = 4.41644, kar je nasa napovedana vrednost krvnega tlaka ob hrupu 85 dB.
+```{r druga_prva_b}
+
+y = -8.93791 + 0.15711* 85
+print(y)
+
+```
+
+##2, 4.d
+Preveri statistično značilnost tega modela ob napaki zavrnitve ničte hipoteze α =
+0.05. Kakšna je p-vrednost? Preveri tudi statistično ustreznost posameznih
+parametrov.
+
+## Odgovor
+Kot vidimo, je p-vrednost je 0.01167, kar pomeni, da je statistično značilen model. Vrednost F-statistike = 10.57, kar ni ravno najboljše, ker je dosti majhna vrednost. R^2 = 0.5154, kar pomeni, da obstaja 49% variance, ki ni odvisna od našega modela, kar je slabo. Pr(>|t|) = 0.0357 pri beta_0, in Pr(>|t|) = 0.0117 pri beta_1, kar pomeni da so obe bete statistično značilno različne od 0.
+```{r druga_prva_b}
+summary(LinearModel)
+
+```
+##2, 4.e
+Izračunaj kolikšen delež celotne variance pokrijemo s takšnim modelom.
+
+## Odgovor
+Iz zgornje naloge lahko razberemo, da tak model pokrije 0.5154 variance.
+
+
+##2, 4.f
+Izriši porazdelitev napak, kvantil-kvantil diagram napak in graf Cookove razdalje in
+komentiraj grafe (preveri heteroskedastičnost in normalno porazdelitev variance in
+določi najbolj vplivne meritve na oceno parametrov modela.) 
+
+## Odgovor
+Iz grafa je lepo razvidno, da varianca grafov ni konstatna, kar nakazuje na HETEROSKEDASTIČNOST. Napake so dokaj normalno porazdeljene, razen dveh na levi strani grafa in ene na desni strani grafa. Iz zadnjega grafa lahko vidimo, da so najbolj vplivne meritve 5, 9 in 8.
+```{r druga_prva_b}
+plot(LinearModel)
+```
+##2, 4.g
+Odstrani 2 najbolj vplivni meritvi na oceno parametrov modela in ponovno določi
+model linearne regresije ter ga primerjaj z osnovnim modelom. 
+
+## Odgovor
+Ta ima R^2 = 0.6434, kar je bolje od prejšnjega, F-statistic: 13.63, ki je večja od prejšnega, se pravi je bolje, in p-value: 0.01019, kar pomeni, da je še vedno statistično značilen in še vedno lahko napovedujemo. Prav tako sta Pr(>|t|) pri beti pod 0.05.
+
+```{r druga_prva_b}
+cooks_d <- cooks.distance(LinearModel)
+
+# order vrne v padajocem vrstnem redu, torej bo prvi indeks najvecja razdalja, zelimo odstraniti prvi dve
+vplivne_meritve <- order(cooks_d, decreasing = TRUE)[1:2]
+#zelimo izljuciti vrstice ki vsebujejo  vplivne meritve
+podatki_brez_vplivnih <- data_raztros[-vplivne_meritve, ]
+
+ponovni_model <- lm(y ~ x, podatki_brez_vplivnih)
+summary(ponovni_model)
+```
+
+#2, 5.Naloga
+V datoteki dn_cars.txt so podatki o porabi goriva posameznih avtomobilov (v drugem
+stolpcu) in osnovne lastnosti avtomobilov. (Ker gre za že stare ameriške avtomobile, so
+porabe precejšnje in podatki malo zastareli.)
+
+##2, 5a. 
+Izriši diagrame raztrosa (scatter diagram) za porabo goriva v odvisnosti od
+prostornine motorja, moči motorja in navora. Iz diagramov oceni zveze med odzivno
+spr. in ostalimi opisnimi spr.
+
+##Odgovor:
+Na vseh grafih izgleda, da se z navedeno opisno spremenljivko, da napovedati odvisno spremenljivko.
+
+```{r druga_prva_b}
+cars <- read.delim("C:\\Users\\Kaja\\Desktop\\faks\\slovenska_statistika\\dn_cars.txt", sep = " ")
+
+# izris
+ggplot(cars, aes(x = prostornina.motorja, y = poraba.goriva)) +
+  geom_point(color = "blue") +
+  ggtitle("diagram raztrosa") +
+  xlab("prostornina morja") +
+  ylab("poraba goriva") +
+  theme_bw()
+
+# izris
+ggplot(cars, aes(x = moc.motorja, y = poraba.goriva)) +
+  geom_point(color = "blue") +
+  ggtitle("diagram raztrosa") +
+  xlab("moc motorja") +
+  ylab("poraba goriva") +
+  theme_bw()
+
+# izris
+ggplot(cars, aes(x = navor, y = poraba.goriva)) +
+  geom_point(color = "blue") +
+  ggtitle("diagram raztrosa") +
+  xlab("navor") +
+  ylab("poraba goriva") +
+  theme_bw()
+```
+
+
+##2, 5b.
+Določi minimalni model multiple linearne regresije za porabo goriva v odvisnosti od
+prostornine motorja, moči motorja in navora. Preveri tudi interakcije med
+spremenljivkami. Izdelaj podobno analizo, kot je bila izvedena na predavanjih. Oceni
+statistično značilnost posameznih modelov in posameznih regresijskih parametrov.
+
+## Odgovor:
+Najprej naredimo osnovni model
+```{r druga_prva_b}
+
+mr <- lm(poraba.goriva ~ prostornina.motorja + moc.motorja + navor, cars) 
+summary(mr)
+
+```
+ izvedemo step korak
+```{r druga_prva_b}
+mr2 = step(mr, direction = "both")
+
+
+```
 
 ```{r druga_prva_b}
 
-
+summary(mr2)
 
 ```
-
+Izlocimo moc.motorja in navor, Pr(>|t|) > od 0.05
 
 ```{r druga_prva_b}
 
+mr3 <- lm(poraba.goriva ~ prostornina.motorja, cars)
+summary(mr3)
 
+```
+mr3 model ima manjso AIC vrednost, je boljsi
+```{r druga_prva_b}
+
+AIC(mr, mr3)
+
+```
+##2, 5.c
+Analiziraj minimalni model:
+###i.
+izriši porazdelitev napak, kvantil-kvantil diagram napak in graf Cookove
+razdalje in komentiraj grafe (preveri heteroskedastičnost in normalno
+porazdelitev variance in določi najbolj vplivne meritve na oceno parametrov
+modela.)
+
+## Odgovor:
+Vidimo laho, da je varianca residualov konstantna, torej je HETEROSKEDASTIČNOST, je normalna porazdelitev variance, najbolj vplivne meritve pa so: 18. 5 in 14.
+
+
+###ii. 
+Izračunaj stopnjo pokrivanja variance s tem modelom
+
+##Odgovor:
+R-squared =  0.793, torej pokriva 79% variance s tem modelom 
+```{r druga_prva_b}
+
+plot(mr3)
+summary(mr3)
+```
+##2, 5.d
+Odstrani 2 najbolj vplivne meritve na oceno parametrov minimalnega modela in
+ponovno določi model multiple linearne regresije ter ga primerjaj s prejšnjim
+modelom. 
+
+## Odgovor:
+R-squared:  0.8789 je vecji, se pravi pokrije vecjiprocent variance. F-statistic: 153.4 je vecji, prav tako pa je tudi p-value = 7.767e-11 manjsa od modela, kjer nismo odstranili 2 najbolj vplivni meritvi.
+```{r druga_prva_b}
+cooks_d_2 <- cooks.distance(mr3)
+
+# order vrne v padajocem vrstnem redu, torej bo prvi indeks najvecja razdalja, zelimo odstraniti prvi dve
+vplivne_meritve_2 <- order(cooks_d_2, decreasing = TRUE)[1:2]
+#zelimo izljuciti vrstice ki vsebujejo  vplivne meritve
+podatki_brez_vplivnih_2 <- cars[-vplivne_meritve, ]
+
+ponovni_model_2 <- lm(poraba.goriva ~ prostornina.motorja, podatki_brez_vplivnih_2)
+summary(ponovni_model_2)
 
 ```
 
+#2, 6.Naloga
+14. aprila 1912 se je potopil Titanik. Od 2228 potnikov jih je preživelo 705. V datoteki
+titanic3.xls so zbrani podatki 1309 potnikov z oznakami, ali so potonili ali ne (survived=0 ali 1).
+##2, 6a. 
+Zanima nas, kakšna je verjetnost, da so potniki preživeli glede na to, koliko so bili
+stari (age), kakšnega spola so bili (sex), v katerem razredu so potovali (pclass) in ali so
+potovali sami, ali z družino (alone=1 ali 0).
+## Odgovor:
 
 ```{r druga_prva_b}
 
-
-
-```
-
-
-```{r druga_prva_b}
-
-
+titanik_data <- read_excel("C:\\Users\\Kaja\\Desktop\\faks\\slovenska_statistika\\titanic3.xls")
 
 ```
-
-
-```{r druga_prva_b}
-
-
-
-```
-
 
 
 ```{r druga_prva_b}
