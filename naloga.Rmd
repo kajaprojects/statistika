@@ -18,7 +18,7 @@ Kakšna je verjetnost, da bo čas izvajanja programa večji od 8 sekund
 ##Odgovor: 
 Verjetnost, da bo čas izvajanja večji od 8 sekund je 0.02275013.
 
-```{r prva a}
+```{r 1}
 ##CDF lahko izracunamo s pnorm(), 
 #CDF je komulativna fja verjetnosti x, - to so prispevki do x (se pravi koliko je verjetnosti, da zavzema vrednosti manjše ali enake x. Torej, ce zelimo dobiti verjetnost, da spremenljivka zavzema vrednosti večje od x, odštejemo cdf od 1)
 1 - pnorm(8, mean=7, sd=0.5)
@@ -30,7 +30,7 @@ Kakšna je verjetnost, da bo čas izvajanja programa med 7 in 8 sekund?
 ##Odgovor: 
 Verjetnost, da bo cas izvajanja programa med 7 in 8 sekund je 0.4772499.
 
-```{r prva b}
+```{r 2}
 #Za izracun verjetnosti da bo cas izvajanja programa med 7 in 8 sekund izracunamo najprej cdf od 8 (s pomocjo pnorm()), da dobimo verjetnost da spremenljivka zavzema vrednosti do 8, nato pa temu odstejemo cdf od 7, da dobimo ravno verjetnost, da spremenljivka zavzema vrednosti med 7 in 8.
 pnorm(8, mean=7, sd=0.5)-pnorm(7, mean=7, sd=0.5)
 ```
@@ -40,7 +40,7 @@ Kakšen je čas izvajanja programa, ki je presežen v 90% meritev?
 ##Odgovor: 
 Čas izvajanja programa, ki je presežen v 90% meritev je 6.359224 sekund.
 
-```{r prva c}
+```{r 3}
 # Ce zelimo izracunati cas izvajanja programa, ki je presezen v 90% meritev, moramo poiskati 10. percentil z uporabo funkcije qnorm().
 qnorm(0.10, mean = 7, sd=0.5)
 
@@ -48,8 +48,11 @@ qnorm(0.10, mean = 7, sd=0.5)
 ##1d. 
 Kakšen bi moral biti izmerjeni standardni odklon, da bi lahko trdili, da je v 99.9% primerov čas izvajanja manjši od 8 sekund?
 
-```{r prva a}
-#idk             pnorm(8, mean=7, sd=0.5)
+```{r 4}
+
+#z_value = qnorm(verj)
+#SE <- (m - mu_0) / z_value
+
 ```
 
 #2. Naloga
@@ -57,16 +60,16 @@ V datoteki dn_srcni_utripi_telovadba.txt imamo zbrane podatke o meritvah povpre�
 utripov študentov pri športni vzgoji. Podatki so zbrani glede na tip športa in glede na spol
 študentov. Analizirajte podatke na naslednji način:
 
-```{r prva }
+```{r 5}
 data_telovadba = read.csv('C:\\Users\\Kaja\\Desktop\\faks\\slovenska_statistika\\dn_srcni_utripi_telovadba.csv')
 
 ```
 
-```{r druga }
+```{r 6}
 library(dplyr)
 library(Rmisc)
 library(ggplot2)
-library(tidyr)
+#library(tidyr)
 
 ```
 ##2a.
@@ -77,7 +80,7 @@ intervale zaupanja v oceno parametrov
 Za izračun ocen povprecja, sem najprej grupirala podatke po tipu sporta in nato uporabila ddply funkcijo, ki applay-a funkcijo mean glede na srcni utrip v posamezni skupini, za izracun povprecja. Prav tako varianco. V spodnji tabeli lahko vidimo povprecja in varianco glede na posamezno skupino sporta.
 Tako smo dobili, da je pri meritvah pri sportu BADMINTON povprcno izmerjen utrip popoulacije 142,5, to pa je zajeto na podatkih v intervalu [139, 146]. Znotraj tega intervala, lahko trdimo, da bo znotraj lezalo populacijsko povprecje z veliko verjetnostjo.
 
-```{r druga a}
+```{r d7}
 
 dt <- data.frame(data_telovadba, group = data_telovadba$TIP_SPORTA)
 ddply(dt,~group,summarise,mean=mean(SR_UTRIP),var=var(SR_UTRIP), n = length(SR_UTRIP), sd_utrip = sd(SR_UTRIP), stde = qt(0.975, n - 1)*sd_utrip / sqrt(n), leva_vrednost = mean - stde, desna_vrednost = mean + stde)
@@ -87,7 +90,7 @@ ddply(dt,~group,summarise,mean=mean(SR_UTRIP),var=var(SR_UTRIP), n = length(SR_U
 
 
 
-```{r druga a}
+```{r 7}
 #alternativa, ki je nisem uporabila, lahko pa s to funkcijo prav tako dobimo povprecje in intervale
 ci_posportih = group.CI(SR_UTRIP ~ TIP_SPORTA, data_telovadba)
 print(ci_posportih)
@@ -99,7 +102,7 @@ Kaj lahko ugotovite iz grafa?
 ##Odgovor: 
 Iz grafa lahko razberemo povprecja meritev srcnih utripov za vsako skupino sporta, prav tako lahko primerjamo skupine med sabo in ugotovimo ali se statisticno znacilno paroma razlikujejo, prav tako lahko opazimo, da podatki niso normalno porazdeljeni(mediane niso na sredini skatel).
 
-```{r druga b}
+```{r d8}
 #Izrisemo diagrame okvirjev z rocaji z ggplot
 ggplot(data_telovadba, aes(x = TIP_SPORTA, y = SR_UTRIP)) +
   geom_boxplot() +
@@ -131,7 +134,7 @@ Pri odbojki in fitnesu ugotovite, ali obstajajo statisticno znacilne razlike med
 Pri odbojki lahko opazimo, da mediana prve skupine ne seka skatle druge skupine, tako da lahko recemo da se statisticno znacilno razlikujeta po meritvah, torej, obstajajo statistične značilne razlike med spoloma.
 Pri fitnesu pa lahko opazimo, da mediana prve skupine seka skatlo druge skupine, tako da lahko recemo da se statisticno znacilno ne razlikujeta po meritvah, torej, ne obstajajo statisticno znacilne razlike med spoloma.
 
-```{r druga d}
+```{r 8}
 df_grp_odbojka = data_telovadba %>% filter(TIP_SPORTA == "ODB")
 
 #Izrisemo diagrame okvirjev z rocaji z ggplot
@@ -141,7 +144,7 @@ ggplot(df_grp_odbojka, aes(x = SPOL, y = SR_UTRIP)) +
   ggtitle("Diagrami okvirjev z rocaji za srcni utrip odbojka")
 ```
 
-```{r druga d}
+```{r 9}
 df_grp_fitnes = data_telovadba %>% filter(TIP_SPORTA == "FIT")
 
 #Izrisemo diagrame okvirjev z rocaji z ggplot
@@ -160,11 +163,11 @@ Intervale ocenjujte na 1000 ponovitvah vzorčenja.
 ## Odgovor:
 Interval zaupanja je [13.62, 16.72], to pomeni, da znotraj tega intervala zajeto povprecje 130.6007, mediana in standardni odklon.
 
-```{r tretja }
+```{r tretja9}
 library(boot)
 ```
 
-```{r tretja}
+```{r t9}
 df_grp_fitnes = data_telovadba %>% filter(TIP_SPORTA == "FIT")
 df_grp_fitnes
 
@@ -209,7 +212,7 @@ boot.ci(std_boot,
 #4. Naloga
 Denimo, da izvajamo meritve casa trajanja programov (v min) za resevanje nekega problema, pri cemer uporabljamo tri metode reševanja A, B in C, pri nastavitvah parametrov 1 in 2. Za vsako kombinacijo metod in parametrov pozenemo program 10-krat in belezimo case trajanja programa. Podatki so v tabeli:
 
-```{r cetrta naloga}
+```{r c9}
 #osnovna opisna statistika
 
 cetrta_podatki <- data.frame(
@@ -256,7 +259,7 @@ Naredi osnovno opisno statistiko casov izvajanja: glede na metode izvajanja, gle
 | vse   | 39.93333  | 38.5    | 14.0687 | 18  | 72  | 2396 |
 
 
-```{r prva_cetrta_a}
+```{r p22}
 # Osnovna opisna statistika glede na metode izvajanja
 
 # glede nametodo in parametre skupaj 
@@ -357,7 +360,7 @@ Izrisala sem grafe glede na:
       b) nastavitve parametra 2 + vse metode:
             mediana druge skatle ne seka prve skatle in obratno, prav pa tako                 mediana tretje skatle ne seka prve skatle, tako da to lahko nakazuje              moznost, da so te meritve statisticno znacilno razlicne.
             
-```{r prva_cetrta_b}
+```{r p23}
 #graf glede na vse
 
 ggplot(stat_glede_parameter_1, aes(x = metoda, y = cas)) +
@@ -406,7 +409,7 @@ Za parametre pa lahko vidimo, da se intervali zaupanja prav tako ne prekrivajo, 
 
 
 
-```{r prva_cetrta_c}
+```{r 23}
 ci_parameter2 = CI(stat_glede_parameter_2$cas)
 ci_parameter1 = CI(stat_glede_parameter_1$cas)
 ci_metodaA = CI(stat_glede_A$cas)
@@ -435,7 +438,7 @@ kontingenčne tabele (vhod v funkcijo). Testiraj delovanje funkcije na naslednji
 
 ##Odgovor: 
 Test je dober, ce sta specificnost in sensitivnost visoki. sensitivnost je v primeru podatkov iz podane kontingencne tabele 0.9659864, specificnost  0.9096045 in tocnost 0.9351852. 
-```{r peta}
+```{r 24}
 # Podatki iz kontingencne tabele. Uporabljamo jih ko preucujemo 2 ali vec kategorijski spremenljivki.
 TP = 710  
 FP = 80   
@@ -521,26 +524,7 @@ ggplot(data=roc_df, aes(x=1-Specificity, y = Sensitivity, color = klasifikacija)
   theme_bw()
 
 ```
-# Dodatna:
-## Oceni parametre naslednjih porazdelitev po metodi maksimalnega verjetja:
 
-### a. Bernoullijeva porazdelitev
-Denimo, da imamo n metov kovanca \( D = \{x_1, x_2, \dots, x_n\} \), kjer velja, da je \( x_i = 1 \), če je padel grb in \( x_i = 0 \), če je padla cifra. Metanje kovanca opišemo z Bernoullijevo porazdelitvijo \( f(x; \mu) = \mu^x (1 - \mu)^{1 - x} \), pri čemer je verjetnost, da bo padel grb, enaka \( \mu \). Recimo, da smo v n metih kovanca vrgli m < n grbov. Oceni parameter \( \mu \) po metodi maksimalnega verjetja. Uporabi logaritem maksimalnega verjetja.
-
-```{r dodatna_a}
-
-
-
-```
-
-### b. Poissonova porazdelitev
-Na podoben način iz n dogodkov \( D = \{x_1, x_2, \dots, x_n\} \), ki so neodvisni in porazdeljeni po Poissonovi porazdelitvi \( f(x; \lambda) = \frac{\lambda^k}{k!} e^{-\lambda} \), oceni parameter \( \lambda \). Uporabi logaritem maksimalnega verjetja.
-
-```{r dodatna_b}
-
-
-
-```
 
 #2.del 1.Naloga
 Pri kirurški operaciji srca merimo koncentracije treh markerjev, s katerimi ugotavljamo uspešnost operacije. Meritve izvajamo tako, da merimo koncentracije markerjev pred in po operaciji. Podatki so zbrani v datoteki dn_markerji_pred_po.txt.
@@ -575,7 +559,7 @@ Naredili smo hi-kvadrat test, ki ga uporabljamo za ugotavljanje ali sta dve koli
 H_0 = Količini sta nepovezani
 Ker smo dobili p-vrednost p-value = 0.002415, ki je manjša od 0.05, lahko ničto hipotezo H_0 zavrnemo in rečemo, da sta ti dve spremenljivki (predmet Statistika in Matematično modeliranje) povezani.
 
-```{r druga_druga c}
+```{r dr25}
 # ustvarimo tabelo
 tdat = as.table(rbind(c(25, 17, 18, 10),   
                       c(6, 16, 4, 8),      
@@ -606,7 +590,7 @@ Ugotovi, ali obstaja statistično značilna razlika med zdravili.
 | 2        |       18.83 ± 1.9          |         19.03 ± 1.93      |        18.58 ± 1.92        |
 
 
-```{r druga_read}
+```{r d26}
 library(readxl)
 data = read_excel("C:\\Users\\Kaja\\Desktop\\faks\\slovenska_statistika\\zdravljenje.xlsx")
 ```
@@ -670,7 +654,7 @@ Za ugotovitev, ce so meritve normalno porazdeljene, uporabimo Shapiro-Wilk test 
 H_0: Podatki so normlno porazdeljeni.
 Ker je p-value = 0.1516 pri podatkih za zdravilo 1 vecja od 0.05, potem nicte hipoteze ne moremo zavrniti. Torej podatki so normalno porazdeljeni. Prav tako je  p-value = 0.411 za zdravilo 2 vecja od 0.05, zato tudi tukaj ne moremo zavrniti nicte hipoteze in ugotovimo, da so meritve pri zdravilu 2 tudi normalno porazdeljene.
 
-```{r druga_prva_b}
+```{r dr27}
 #uporabimo Shapiro-Wilk test normalnosti
 shapiro_test_zdravilo1 <- shapiro.test(zdravilo1$marker)
 shapiro_test_zdravilo2 <- shapiro.test(zdravilo2$marker)
@@ -690,7 +674,7 @@ Uporabili smo parni t-test neodvisnih vzorcev, zato ker so podatki za oba zdravi
 H_0: Zdravilo 1 in zdravilo 2 se statisticno znacilno ne razlikujeta.
 Ker smo dobili p-value = 0.05651, za vse skupaj in to je malo nad =.05, ne moremo ovreči ničte hipoteze, kar pomeni, da se zdravilo 1 in zdravilo 2 statisticno znacilno ne razlikujeta. 
 
-```{r druga_prva_b}
+```{r d28}
 #za vse
 t_test <- t.test(zdravilo1$marker, zdravilo2$marker, var.equal = FALSE)
 
@@ -713,7 +697,7 @@ Preveri, ali sta deleža moških in žensk pri obeh zdravilih enaka.
 ##Odgovor: 
 Nista, delez moskih pri zdravilu 1 je 46.93 in delez moskih pri zdravilu 2 je 53.94, kar ni enako. Pri zenskah tudi ni enako in sicer 53.06 pri zdravilu 1 in 46.05 pri zdravilu 2.
 
-```{r druga_prva_b}
+```{r 29}
 st_moskih_zdravilo_1 = sum(data$spol == "M" & data$zdravilo == 1)
 
 st_moskih_zdravilo_2 = sum(data$spol == "M" & data$zdravilo == 2)
@@ -749,7 +733,7 @@ Kaj to pomeni?
 ##Odgovor: 
 Za preverjanje razlik v uspesnosti zdravljenja glede na spol pri zdravilu 1 sem uporabila t.test, ker sta spremenljivki neodvisni in normalno porazdeljeni.
 Postavimo nicto hipotezo in sicer H_0: Skupini se statisticno znacilno ne razlikujeta. Ker je p-value = 0.2454 vecja od 0.05, ne moremo ovreci nicte hipoteze. Torej Uspesnost zdravljenja glede na spol se statisticno znacilno ne razlikuje.
-```{r tretja_a_3}
+```{r tretja_a_322}
 shapiro_m = shapiro.test(zdravilo1_m$marker)
 shapiro_m #p-value = 0.4135, se pravi je normalno porazdeljen
 
@@ -770,7 +754,7 @@ Kaj to pomeni?
 Za preverjanje razlik v uspesnosti zdravljenja glede na spol pri zdravilu 2 sem uporabila t.test, ker sta spremenljivki neodvisni in normalno porazdeljeni.
 Postavimo nicto hipotezo in sicer H_0: Skupini se statisticno znacilno ne razlikujeta. Ker je p-value = 0.1576 vecja od 0.05, ne moremo ovreci nicte hipoteze. Torej Uspesnost zdravljenja glede na spol se statisticno znacilno ne razlikuje.
 
-```{r tretja_a_4}
+```{r tretja44_a_4}
 shapiro_m = shapiro.test(zdravilo2_m$marker)
 shapiro_m #p-value = 0.1968, se pravi je normalno porazdeljen
 
@@ -808,7 +792,7 @@ linearna regresija?
 ##Odgovor: 
 Na podlagi diagrama lahko sklepamo, da je korelacija med stopnjo hrupa in povisanega krvnega tlaka pozitivno narascujoca, torej linearna regresija bi bil primeren model za modeliranje odvisnosti med y in x.
 
-```{r druga_prva_b}
+```{r druga_p55rva_b}
 
 y <- c(1, 0, 1, 2, 5, 1, 4, 6, 2, 3)
 x <- c(60, 63, 65, 70, 70, 70, 80, 90, 80, 80)
@@ -830,7 +814,7 @@ Modeliraj y v odvisnosti z x z modelom linearne regresije. Kakšna je varianca n
 ## Odgovor:
 Varianca napak je 1.363 pri 8 stopnjah prostosti.
 
-```{r druga_prva_b}
+```{r druga6_prva_b}
 
 LinearModel <- lm(y ~ x, data_raztros)
 summary(LinearModel)
@@ -843,7 +827,7 @@ Izračunaj napovedano vrednost povišanja krvnega tlaka ob hrupu 85 dB
 
 ##odgovor
 Racunamo odzivno spremenljivko y, pri cemer je  opsina spremenljivka x = 85. Iz zgornje naloge lahko izberemo, da je beta_0 = -8.93791 in beta_1 = 0.15711. Ce zapisemo po formuli y = beta_0 + beta_1 * x dobimo y = 4.41644, kar je nasa napovedana vrednost krvnega tlaka ob hrupu 85 dB.
-```{r druga_prva_b}
+```{r druga_prvad_b}
 
 y = -8.93791 + 0.15711* 85
 print(y)
@@ -857,7 +841,7 @@ parametrov.
 
 ## Odgovor
 Kot vidimo, je p-vrednost je 0.01167, kar pomeni, da je statistično značilen model. Vrednost F-statistike = 10.57, kar ni ravno najboljše, ker je dosti majhna vrednost. R^2 = 0.5154, kar pomeni, da obstaja 49% variance, ki ni odvisna od našega modela, kar je slabo. Pr(>|t|) = 0.0357 pri beta_0, in Pr(>|t|) = 0.0117 pri beta_1, kar pomeni da so obe bete statistično značilno različne od 0.
-```{r druga_prva_b}
+```{r druga_66prva_b}
 summary(LinearModel)
 
 ```
@@ -875,7 +859,7 @@ določi najbolj vplivne meritve na oceno parametrov modela.)
 
 ## Odgovor
 Iz grafa je lepo razvidno, da varianca grafov ni konstatna, kar nakazuje na HETEROSKEDASTIČNOST. Napake so dokaj normalno porazdeljene, razen dveh na levi strani grafa in ene na desni strani grafa. Iz zadnjega grafa lahko vidimo, da so najbolj vplivne meritve 5, 9 in 8.
-```{r druga_prva_b}
+```{r druga_56prva_b}
 plot(LinearModel)
 ```
 ##2, 4.g
@@ -885,7 +869,7 @@ model linearne regresije ter ga primerjaj z osnovnim modelom.
 ## Odgovor
 Ta ima R^2 = 0.6434, kar je bolje od prejšnjega, F-statistic: 13.63, ki je večja od prejšnega, se pravi je bolje, in p-value: 0.01019, kar pomeni, da je še vedno statistično značilen in še vedno lahko napovedujemo. Prav tako sta Pr(>|t|) pri beti pod 0.05.
 
-```{r druga_prva_b}
+```{r druga456_prva_b}
 cooks_d <- cooks.distance(LinearModel)
 
 # order vrne v padajocem vrstnem redu, torej bo prvi indeks najvecja razdalja, zelimo odstraniti prvi dve
@@ -910,7 +894,7 @@ spr. in ostalimi opisnimi spr.
 ##Odgovor:
 Na vseh grafih izgleda, da se z navedeno opisno spremenljivko, da napovedati odvisno spremenljivko.
 
-```{r druga_prva_b}
+```{r dru624ga_prva_b}
 cars <- read.delim("C:\\Users\\Kaja\\Desktop\\faks\\slovenska_statistika\\dn_cars.txt", sep = " ")
 
 # izris
@@ -947,34 +931,34 @@ statistično značilnost posameznih modelov in posameznih regresijskih parametro
 
 ## Odgovor:
 Najprej naredimo osnovni model
-```{r druga_prva_b}
+```{r drug86a_prva_b}
 
 mr <- lm(poraba.goriva ~ prostornina.motorja + moc.motorja + navor, cars) 
 summary(mr)
 
 ```
  izvedemo step korak
-```{r druga_prva_b}
+```{r drug7a_prva_b}
 mr2 = step(mr, direction = "both")
 
 
 ```
 
-```{r druga_prva_b}
+```{r drug676a_prva_b}
 
 summary(mr2)
 
 ```
 Izlocimo moc.motorja in navor, Pr(>|t|) > od 0.05
 
-```{r druga_prva_b}
+```{r druga_prva6873_b}
 
 mr3 <- lm(poraba.goriva ~ prostornina.motorja, cars)
 summary(mr3)
 
 ```
 mr3 model ima manjso AIC vrednost, je boljsi
-```{r druga_prva_b}
+```{r druga_pr53va_b}
 
 AIC(mr, mr3)
 
@@ -996,7 +980,7 @@ Izračunaj stopnjo pokrivanja variance s tem modelom
 
 ##Odgovor:
 R-squared =  0.793, torej pokriva 79% variance s tem modelom 
-```{r druga_prva_b}
+```{r druga_prv657a_b}
 
 plot(mr3)
 summary(mr3)
@@ -1008,7 +992,7 @@ modelom.
 
 ## Odgovor:
 R-squared:  0.8789 je vecji, se pravi pokrije vecjiprocent variance. F-statistic: 153.4 je vecji, prav tako pa je tudi p-value = 7.767e-11 manjsa od modela, kjer nismo odstranili 2 najbolj vplivni meritvi.
-```{r druga_prva_b}
+```{r druga_prv685a_b}
 cooks_d_2 <- cooks.distance(mr3)
 
 # order vrne v padajocem vrstnem redu, torej bo prvi indeks najvecja razdalja, zelimo odstraniti prvi dve
@@ -1025,20 +1009,256 @@ summary(ponovni_model_2)
 14. aprila 1912 se je potopil Titanik. Od 2228 potnikov jih je preživelo 705. V datoteki
 titanic3.xls so zbrani podatki 1309 potnikov z oznakami, ali so potonili ali ne (survived=0 ali 1).
 ##2, 6a. 
-Zanima nas, kakšna je verjetnost, da so potniki preživeli glede na to, koliko so bili
-stari (age), kakšnega spola so bili (sex), v katerem razredu so potovali (pclass) in ali so
+Zanima nas, kakšna je verjetnost, da so potniki preživeli glede na to, koliko so bili stari (age), kakšnega spola so bili (sex), v katerem razredu so potovali (pclass) in ali so
 potovali sami, ali z družino (alone=1 ali 0).
+
 ## Odgovor:
 
-```{r druga_prva_b}
+Moznost prezivetja glede na razred:
+
+        1         2         3 
+0.6191950 0.4296029 0.2552891 
+
+
+Moznost prezivetja glede na spol:
+
+female      male 
+0.7274678 0.1909846 
+
+       Otrocki (0-12)   Mladostniki (13-18)         Mladi (19-30) 
+            0.5604396             0.4761905             0.3662651 
+Srednja_leta1 (31-50) Srednja_leta2 (51-70)  Starostniki (70-100) 
+            0.4087193             0.4117647             0.2500000 
+            
+            
+Moznost prezivetja ce so potovali sami (1) ali v druzini (0)
+        0         1 
+0.5028902 0.3025316 
+
+```{r druga58633_prva_b}
 
 titanik_data <- read_excel("C:\\Users\\Kaja\\Desktop\\faks\\slovenska_statistika\\titanic3.xls")
 
+#presteje glede na spol koliko moskih in koliko zensk 
+skupno_spol <- table(titanik_data$sex)
+#presteje koliko jih je prezivelo ob vsakem spolu
+preziveli_spol <- table(titanik_data$sex[titanik_data$survived == 1])
+#zelimo vedeti razmerje med prezivelimi in vsemi
+verjetnost_przivetja_spol <- preziveli_spol / skupno_spol
+
+#presteje glede na sami potovali
+skupno_alone <- table(titanik_data$alone)
+#presteje koliko jih je prezivelo ob vsakem spolu
+preziveli_alone <- table(titanik_data$alone[titanik_data$survived == 1])
+#zelimo vedeti razmerje med prezivelimi in vsemi
+verjetnost_przivetja_alone <- preziveli_alone / skupno_alone
+
+#presteje glede na razred 
+skupno_razred <- table(titanik_data$pclass)
+#presteje koliko jih je prezivelo ob vsakem razred
+preziveli_razred <- table(titanik_data$pclass[titanik_data$survived == 1])
+#zelimo vedeti razmerje med prezivelimi in vsemi
+verjetnost_przivetja_razred <- preziveli_razred / skupno_razred
+
+
+titanik_data$age_group <- cut(
+  titanik_data$age,
+  breaks = c(0, 12, 18, 30, 50, 70, 120),
+  labels = c("Otrocki (0-12)", "Mladostniki (13-18)", "Mladi (19-30)", "Srednja_leta1 (31-50)", "Srednja_leta2 (51-70)", "Starostniki (70-100)"),
+  right = FALSE
+)
+skupno_starost <- table(titanik_data$age_group)
+preziveli_starost <- table(titanik_data$age_group[titanik_data$survived == 1])
+verjetnost_przivetja_starost <- preziveli_starost / skupno_starost
+
+print(verjetnost_przivetja_spol)
+print(verjetnost_przivetja_starost)
+print(verjetnost_przivetja_razred)
+print(verjetnost_przivetja_alone)
+
+
 ```
+##2, 6b. 
+Iz podatkov naprej izvedi osnovno statistiko, koliko ljudi je preživelo glede na posamezne kategorije.
+
+##Odgovor:
+
+```{r dru4556ga_prva_b}
+library(dplyr)
+
+summary_starost_prezivetje <- titanik_data %>%
+  group_by(survived) %>%
+  summarise(
+    mean_age = mean(age, na.rm = TRUE),
+    median_age = median(age, na.rm = TRUE),
+    min_age = min(age, na.rm = TRUE),
+    max_age = max(age, na.rm = TRUE),
+    sd_age = sd(age, na.rm = TRUE)
+  )
 
 
+summary_starost_prezivetje
+```
+##2, 6c
+Nato izvedi model multiple logistične regresije, kjer je odzivna spr. survived, opisne
+pa so age, sex, pclass in alone.
+i. Izvedi modeliranje z vsemi opisnimi spr. skupaj.
+ii. Napiši model, ki si ga dobil. Kaj pomeni ta model?
+iii. Komentiraj razmerja obetov za posamezne spr.
+iv. Uporabi model za napovedovanje, ali bo nekdo utonil ali ne.
+v. Izvedi tudi ROC analizo
+
+##Odgovor:
+ii)
+Model je narejen po enacbi log = beta_0 + beta_1 * age + beta_2 * sex + beta_3 * pclass + beta_4 * alone
+Ta model nam pove, verjetnost prezivetja glede na starost, spol, razred in ce potuje sam.
+
+```{r druga_3333prva_b}
+logreg <- glm(survived ~ age + sex + pclass + alone, titanik_data, family = binomial)
+summary(logreg)
+
+
+```
+##2, 6ciii. 
+Komentiraj razmerja obetov za posamezne spr.
+Pri spolu opazimo, da je Odds_Ratio = 0.08330224, kar pomeni da so obeti za preživetje pri moskem spolu približno 0.083-kratnik obetov za preživetje zensk. (ce pogledamo $(1 - OR)*100 = (1-0.083)*100)$ = 91.7% manjsa verjetnost prezivetja pri moskih kot pri zenskah. 95% CI [0.059, 0.116] ne vkljucuje 1, torej je statisticno znacilno.
+
+(tako pogledamo za vsako spremenljivko)
+
+sexmale      0.08330224  0.05929541   0.1156688
+pclass       0.32401207  0.25834802   0.4032234
+alone        0.94930141  0.68770513   1.3158123
+```{r druga_p343434rva_b}
+#dodala se intervale zaupanja skupaj z odds ration
+exp(cbind(Odds_Ratio = coef(logreg), confint(logreg)))
+
+```
+##2, 6civ. 
+Uporabi model za napovedovanje, ali bo nekdo utonil ali ne.
 ```{r druga_prva_b}
 
+set.seed(123)
+# Skupno število vrstic
+skupno_vrstic = nrow(titanik_data)
+# Naključno izberemo 70% podatkov za učni niz
+train_niz = sample(1:skupno_vrstic, size = 0.7 * skupno_vrstic)
+#razdelim podatke na treniranje in testiranje
+train_data = titanik_data[train_niz, ]
+test_data = titanik_data[-train_niz, ]
+
+#na ucnem modelu
+logreg_test <- glm(survived ~ age + sex + pclass, data = train_data, family = binomial)
+summary(logreg_test)
+
+# Napovedovanje verjetnosti na testnem nizu
+predikcija <- predict(logreg_test, newdata = test_data, type = "response")
+```
+
+#2, 6cv. 
+Izvedi tudi ROC analizo
+
+```{r drug4545a_prva_b}
+library(pROC)
+
+roc_analiza = roc(test_data$survived, predikcija)
+
+roc_analiza
+
+```
+##2, 6d. 
+Izvedi še model multiple logistične regresije po koračni metodi in komentiraj kot prej.
+
+## Odgovor:
+spremenljivka alone je bila izlocena, ker ni izboljsala modela glede AIC. Pogledamo AIC, in vidimo da ima model brez alone AIC = 991.02, medtem ko ima model z alone AIC = 992.93, kar pomeni, da smo uspeli izboljsati test.
+```{r druga_p565656rva_b}
+# Izvedba koračne metode
+step_model <- step(logreg, direction = "both")
+summary(step_model)
+summary(logreg)
+
+```
+
+#2,  7 Naloga
+Preučujemo hitrost treh algoritmov glede na različne vhodne podatke. Hitrosti izvajanja
+algoritmov v sekundah so podane v naslednji tabeli:
+
+| Dan        | algo 1 | algo 2 | algo 3 |
+|------------|--------|--------|--------|
+| Podatki 1  | 11     | 10     | 4      |
+|            | 8      | 12     | 3      |
+|            | 6      | 13     | 5      |
+|            | 8      | 11     | 6      |
+| Podatki 2  | 9      | 7      | 5      |
+|            | 10     | 8      | 8      |
+|            | 10     | 11     | 6      |
+|            | 12     | 9      | 7      |
+| Podatki 3  | 8      | 7      | 5      |
+|            | 9      | 8      | 9      |
+|            | 9      | 10     | 7      |
+|            | 11     | 9      | 6      |
+| Podatki 4  | 4      | 9      | 7      |
+|            | 5      | 6      | 6      |
+|            | 3      | 8      | 6      |
+|            | 5      | 8      | 5      |
+| Podatki 5  | 13     | 10     | 12     |
+|            | 12     | 9      | 10     |
+|            | 11     | 9      | 11     |
+|            | 14     | 8      | 12     |
+
+Ugotovi, ali obstajajo statistične razlike v hitrosti izvajanja algoritmov glede na tip algoritma in glede
+na vhodne podatke:
+##2, 7a) 
+Izriši ustrezen graf, kjer prikažeš, kako se razlikujejo hitrosti glede na tip algoritma in vhodne
+podatke. 
+
+```{r druga_7878prva_b}
+library(reshape2)
+
+tabela7 <- data.frame(
+  Dan = c("Podatki 1", "Podatki 1", "Podatki 1", "Podatki 1", "Podatki 2", "Podatki 2", "Podatki 2", "Podatki 2", 
+          "Podatki 3", "Podatki 3", "Podatki 3", "Podatki 3", "Podatki 4", "Podatki 4", "Podatki 4", "Podatki 4", 
+          "Podatki 5", "Podatki 5", "Podatki 5", "Podatki 5"),
+  algo1 = c(11, 8, 6, 8, 9, 10, 10, 12, 8, 9, 9, 11, 4, 5, 3, 5, 13, 12, 11, 14),
+  algo2 = c(10, 12, 13, 11, 7, 8, 11, 9, 7, 8, 10, 9, 9, 6, 8, 8, 10, 9, 9, 8),
+  algo3 = c(4, 3, 5, 6, 5, 8, 6, 7, 5, 9, 7, 6, 7, 6, 6, 5, 12, 10, 11, 12)
+)
+tabela7
+
+#lahko bi namsto tega uporabila pivot longer
+tabela7_spremenjena <- melt(tabela7, id.vars = "Dan", variable.name = "Algoritem", value.name = "cas")
+
+#  izris po tipu algoritma
+# Box plot
+ggplot(tabela7_spremenjena, aes(x = Dan, y=cas, color=Algoritem)) + 
+  geom_boxplot() +
+  theme_bw() 
 
 
 ```
+##2, 7b)
+Izvedi analizo variance s postopkom dvo-enosmerne ANOVE in preveri statistično značilnost
+modela z uporabo tabele ANOVA ter statistično značilnost posameznih faktorjev in
+interakcije. Izpiši ustrezne rezultate analize. 
+
+##Odgovor
+Iz rezultata lahko razberemo, da imamo pri hitrost izvajanja med razlicnimi algoritmi F = 15.304 in Pr(>F) = 8.50e-06, kar kar kaze, da obstajajo statisticno znacilne razlike v hitrosti izvajanja med razlicnimi algoritmi.
+Iz rezultata v hitrosti izvajanja glede na dan(oziroma tip podatkov) vidimo, da ima F value = 20.910 in Pr(>F) = 8.52e-10, kar pomeni, da kaze na to, da je statisticno znacilno razlicno v hitrosti izvajanja glede na tip podatkov (Dan).
+Iz rezultatov med algoritmom in tipom podatkov lahko razberemo, da je F = 9.667 in Pr(>F) = 1.12e-07, kar kaze na to, da je vpliv tipa algoritma na hitrost izvajanja odvisen od tipa podatkov (Dan).
+```{r druga_8989prva_b}
+
+anova_model <- aov(cas ~ Algoritem + Dan + Algoritem:Dan, tabela7_spremenjena)
+summary(anova_model)
+
+```
+
+##2, 7c) 
+Preveri statistično značilnost vpliva posameznih faktorjev (tipa algoritma in vrste podatkov) s post-hoc analizo. Uporabi pravilne izbire post-hoc testov glede na število primerjav. 
+
+##Odgovor
+Uporabila sem HSD, ker sem zelela primerjati vse mozne pare in pogledati ce se katerikoli skupini statisticno razlikujeta. 
+Glede na to, da je veliko rezultatov, bom interpretirala podatke za primerjavo med algoritmi in sicer, lahko razberemo, da je algoritem 2 za 0.2 krat visji v casu izvajanja od algoritma 1 in da je prilagojena p-vrednost, ki uposteva veckratne primerjave p adj = 0.8823137, vecja od 0.05, potem lahko recemo, da razlika ni statisticno znacilna. Poleg tega interval zaupanja vsebuje 0, kar nakazuje da ni statisticno znacilna.
+```{r druga_prv9090a_b}
+post_hoc <- TukeyHSD(anova_model)
+print(post_hoc)
+```
+
